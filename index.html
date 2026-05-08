@@ -604,6 +604,104 @@
     100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
   }
 
+  /* ===== ステージ装飾 ===== */
+  #groundDeco {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+  /* ステージ2: 波うつ地面（SVGのwaveを上端に） */
+  .stage-desert #groundDeco {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 25' preserveAspectRatio='none'><path d='M0,15 Q12.5,3 25,15 T50,15 T75,15 T100,15 L100,25 L0,25 Z' fill='%23c89455'/></svg>");
+    background-size: 200px 24px;
+    background-position: 0 -2px;
+    background-repeat: repeat-x;
+  }
+  /* ステージ3: 溶岩のゆらぎ */
+  .stage-lava #groundDeco {
+    background:
+      radial-gradient(ellipse at 20% 30%, rgba(255,230,80,0.55) 0%, transparent 35%),
+      radial-gradient(ellipse at 70% 50%, rgba(255,200,40,0.45) 0%, transparent 40%),
+      linear-gradient(180deg, rgba(255,200,80,0.4) 0%, transparent 35%);
+    animation: lavaShimmer 1.4s ease-in-out infinite alternate;
+  }
+  @keyframes lavaShimmer {
+    from { opacity: 0.7; filter: brightness(1); }
+    to   { opacity: 1;   filter: brightness(1.2); }
+  }
+  /* ステージ3: 暗い空に火の粉が舞う雰囲気 */
+  .stage-lava #cloudsLayer { filter: saturate(1.2) brightness(0.95); }
+  .stage-desert #hillsLayer { filter: saturate(1.1); }
+  .stage-lava #hillsLayer   { filter: drop-shadow(0 0 10px rgba(255,80,0,0.6)); }
+
+  /* ===== 炎バー（ステージ3：上下に動く障害物） ===== */
+  .osc-bar {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+    font-size: clamp(28px, 7vmin, 50px);
+    filter: drop-shadow(0 0 8px #ff8800) drop-shadow(0 0 14px #ffaa44);
+  }
+  .osc-bar > div {
+    margin: -6px 0;
+    animation: flameFlicker 0.18s ease-in-out infinite alternate;
+  }
+  @keyframes flameFlicker {
+    from { transform: scale(1) rotate(-2deg); }
+    to   { transform: scale(1.06) rotate(2deg); }
+  }
+
+  /* ===== ステージセレクタ ===== */
+  .stageSelect {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin: 8px auto 12px;
+    max-width: 380px;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .stageBtn {
+    flex: 1 1 100px;
+    min-width: 95px;
+    padding: 8px 6px 6px;
+    border: 3px solid #ffb3d9;
+    background: rgba(255,255,255,0.85);
+    border-radius: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+    color: #d63384;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(255,255,255,0.2);
+    position: relative;
+  }
+  .stageBtn:active { transform: scale(0.95); }
+  .stageBtn .ico { font-size: clamp(28px, 7vmin, 38px); line-height: 1; }
+  .stageBtn .nm { font-size: clamp(11px, 2.8vmin, 13px); }
+  .stageBtn .info { font-size: clamp(10px, 2.4vmin, 12px); color: #c97a00; font-weight: bold; }
+  .stageBtn.selected {
+    border-color: #ff1493;
+    background: linear-gradient(135deg, #fff0f8, #ffe0ee);
+    box-shadow: 0 0 0 3px #ff8ec5, 0 4px 8px rgba(255,91,167,0.4);
+  }
+  .stageBtn.locked {
+    background: rgba(220,220,220,0.85);
+    color: #888;
+    cursor: not-allowed;
+    border-color: #bbb;
+  }
+  .stageBtn.locked .ico { filter: grayscale(1) opacity(0.5); }
+  .stageBtn.locked .info { color: #aa3333; }
+  .stageBtn.legendary { border-color: #ff8800; }
+  .stageBtn.legendary.selected { box-shadow: 0 0 0 3px #ffd966, 0 4px 10px rgba(255,180,40,0.5); }
+
   /* カウントダウン */
   #countdown {
     position: absolute; inset: 0;
@@ -637,6 +735,7 @@
     <div id="hillsLayer" class="bgLayer"></div>
 
     <div id="ground">
+      <div id="groundDeco"></div>
       <div id="groundPattern"></div>
     </div>
 
@@ -669,12 +768,13 @@
     <div id="startScreen" class="overlay show">
       <div class="overlayBody">
         <h1>ぴょんぴょん<br>クマ</h1>
-        <div class="subtitle">🧸 すきな ぬいぐるみを えらんでね！</div>
+        <div class="subtitle">🗺️ ステージを えらんでね</div>
+        <div class="stageSelect" id="stageSelect"></div>
+        <div class="subtitle">🧸 すきな ぬいぐるみを えらんでね</div>
         <div class="bearGrid" id="bearGrid"></div>
         <div class="subtitle">
           タップで <b>ジャンプ</b> ／ もういちどで <b>2だんジャンプ</b><br>
-          🚀 を とると スーパーダッシュ！<br>
-          🍓🍩⭐ を あつめて スコアアップ
+          🚀 を とると スーパーダッシュ！
         </div>
       </div>
       <div class="overlayActions">
@@ -699,6 +799,7 @@
         <h2 id="goTitle">ゲームオーバー</h2>
         <div class="scoreLine">スコア <span id="finalScore">0</span></div>
         <div class="scoreLine" id="newHi" style="display:none; color:#c97a00">🏆 ハイスコア！</div>
+        <div class="scoreLine" id="stageUnlock" style="display:none; color:#ff6600; font-size:clamp(16px,4.4vmin,22px)"></div>
 
         <!-- 宝箱選択（条件達成時のみ表示） -->
         <div id="chestSection" style="display:none;">
@@ -732,6 +833,8 @@
   const bearBody = document.getElementById('bearBody');
   const ground = document.getElementById('ground');
   const groundPattern = document.getElementById('groundPattern');
+  const groundDeco = document.getElementById('groundDeco');
+  const stageSelectEl = document.getElementById('stageSelect');
   const cloudsLayer = document.getElementById('cloudsLayer');
   const hillsLayer = document.getElementById('hillsLayer');
   const scoreEl = document.getElementById('score');
@@ -754,6 +857,7 @@
   const goQuitBtn = document.getElementById('goQuitBtn');
   const finalScoreEl = document.getElementById('finalScore');
   const newHiEl = document.getElementById('newHi');
+  const stageUnlockEl = document.getElementById('stageUnlock');
   const goTitle = document.getElementById('goTitle');
   const countdownOverlay = document.getElementById('countdown');
   const countdownNum = document.getElementById('countdownNum');
@@ -770,6 +874,67 @@
   const UNLOCK_KEY = 'pyon_kuma_unlock_v1';
   const SELECT_KEY = 'pyon_kuma_select_v1';
   const MUSIC_KEY  = 'pyon_kuma_music_v1';
+  const STAGE_KEY  = 'pyon_kuma_stage_v1';
+  const STAGE_HI_KEY = 'pyon_kuma_stage_hi_v1';
+
+  // ====== ステージ定義 ======
+  // threshold = ひとつ前のステージで このスコアを取ると 解放
+  const STAGES = [
+    {
+      id: 1, name: 'みどりの もり', emoji: '🌳',
+      style: 'forest', threshold: 0,
+      bgGrad: 'linear-gradient(180deg, #b8e6ff 0%, #d8f0ff 60%, #fff0d8 100%)',
+      groundGrad: 'linear-gradient(180deg, #a8e08a 0%, #7fc56a 100%)',
+      groundBorder: '4px dashed #fff',
+      patternColor: '#5fa84a',
+      clouds: ['☁️','⛅','☁️','☁️'],
+      hills: ['🌲','⛰️','🌳','🏔️','🌲','🌳'],
+      obstacles: {
+        short:   [{emoji:'🪨', cls:'short'}],
+        ground:  [{emoji:'🪨', cls:''}, {emoji:'🦔', cls:''}, {emoji:'🌵', cls:''}, {emoji:'🪵', cls:''}],
+        tall:    [{emoji:'🌵', cls:'tall'}, {emoji:'🌳', cls:'tall'}],
+        fly:     {emoji:'🐝', cls:'flying', fly:0.40},
+        flyHigh: {emoji:'🐝', cls:'flying', fly:0.55},
+      },
+      bars: false,
+    },
+    {
+      id: 2, name: 'なみうつ さばく', emoji: '🏜️',
+      style: 'desert', threshold: 1500,
+      bgGrad: 'linear-gradient(180deg, #ffc481 0%, #ffe1a8 50%, #ffb874 100%)',
+      groundGrad: 'linear-gradient(180deg, #f0c270 0%, #c89455 100%)',
+      groundBorder: '4px dotted #fff5d6',
+      patternColor: '#a87035',
+      clouds: ['☁️','⛅','☁️','🌤️'],
+      hills: ['🌴','🐪','🌵','🏜️','🌴','🦂'],
+      obstacles: {
+        short:   [{emoji:'🪨', cls:'short'}, {emoji:'🦂', cls:'short'}],
+        ground:  [{emoji:'🌵', cls:''}, {emoji:'🪨', cls:''}, {emoji:'🐍', cls:''}],
+        tall:    [{emoji:'🌵', cls:'tall'}, {emoji:'🌴', cls:'tall'}, {emoji:'🌪️', cls:'tall'}],
+        fly:     {emoji:'🦅', cls:'flying', fly:0.40},
+        flyHigh: {emoji:'🦅', cls:'flying', fly:0.55},
+      },
+      bars: false,
+    },
+    {
+      id: 3, name: 'ようがんの くに', emoji: '🌋',
+      style: 'lava', threshold: 3000, legendary: true,
+      bgGrad: 'linear-gradient(180deg, #1a0030 0%, #4a0040 35%, #aa2030 65%, #ff5500 100%)',
+      groundGrad: 'linear-gradient(180deg, #ff7700 0%, #aa0000 100%)',
+      groundBorder: '4px solid #ffaa44',
+      patternColor: '#660000',
+      clouds: ['💨','☁️','💨','🔥'],
+      hills: ['🌋','🗿','💀','🪨','🌋','🗿'],
+      obstacles: {
+        short:   [{emoji:'🔥', cls:'short'}, {emoji:'💀', cls:'short'}],
+        ground:  [{emoji:'🪨', cls:''}, {emoji:'💀', cls:''}, {emoji:'🔥', cls:''}],
+        tall:    [{emoji:'🌋', cls:'tall'}, {emoji:'🗿', cls:'tall'}, {emoji:'🔥', cls:'tall'}],
+        fly:     {emoji:'🦇', cls:'flying', fly:0.45},
+        flyHigh: {emoji:'🦇', cls:'flying', fly:0.60},
+      },
+      bars: true,  // 上下に揺れる炎バー
+    },
+  ];
 
   // ====== キャラクター 10体 ======
   // 1体目はデフォルト解放、残り9体はスコア閾値で。最後の3つは厳しめ。
@@ -792,10 +957,33 @@
   let selectedBearId = localStorage.getItem(SELECT_KEY) || 'classic';
   if (!unlockedSet.has(selectedBearId)) selectedBearId = 'classic';
   let musicEnabled = (localStorage.getItem(MUSIC_KEY) || '1') !== '0';
+  let selectedStageId = parseInt(localStorage.getItem(STAGE_KEY) || '1', 10);
+  let stageHi = {};
+  try { stageHi = JSON.parse(localStorage.getItem(STAGE_HI_KEY) || '{}'); } catch(e){ stageHi = {}; }
   function saveAll(){
     localStorage.setItem(UNLOCK_KEY, JSON.stringify([...unlockedSet]));
     localStorage.setItem(SELECT_KEY, selectedBearId);
     localStorage.setItem(MUSIC_KEY, musicEnabled ? '1':'0');
+    localStorage.setItem(STAGE_KEY, String(selectedStageId));
+    localStorage.setItem(STAGE_HI_KEY, JSON.stringify(stageHi));
+  }
+  function currentStage(){
+    return STAGES.find(s => s.id === selectedStageId) || STAGES[0];
+  }
+  function isStageUnlocked(stageId){
+    if (stageId === 1) return true;
+    const prevHi = stageHi[stageId - 1] || 0;
+    const target = STAGES.find(s => s.id === stageId);
+    return prevHi >= target.threshold;
+  }
+  function applyStage(){
+    const s = currentStage();
+    GA.style.background = s.bgGrad;
+    ground.style.background = s.groundGrad;
+    ground.style.borderTop = s.groundBorder;
+    groundPattern.style.color = s.patternColor;
+    GA.classList.remove('stage-forest','stage-desert','stage-lava');
+    GA.classList.add('stage-' + s.style);
   }
 
   // ====== 状態 ======
@@ -841,19 +1029,13 @@
   const JET_DURATION = 5;          // 秒
   const JET_SPEED_MUL = 1.9;
 
-  // ====== 障害物テンプレ ======
-  // size: short / normal / tall / wide
-  const OBSTACLES = {
-    short_rock:  { emoji:'🪨', cls:'short' },
-    rock:        { emoji:'🪨', cls:''      },
-    hedgehog:    { emoji:'🦔', cls:''      },
-    cactus:      { emoji:'🌵', cls:''      },
-    tall_cactus: { emoji:'🌵', cls:'tall'  },
-    log:         { emoji:'🪵', cls:''      },
-    tall_tree:   { emoji:'🌳', cls:'tall'  },
-    bee:         { emoji:'🐝', cls:'flying', fly:0.40 },
-    high_bee:    { emoji:'🐝', cls:'flying', fly:0.55 },
-  };
+  // ====== 障害物選択：ステージのobstaclesを参照 ======
+  function pickStageObstacle(bucket){
+    const s = currentStage();
+    const arr = s.obstacles[bucket];
+    if (Array.isArray(arr)) return pick(arr);
+    return arr;
+  }
   const COINS = [
     { emoji:'🍓', points: 10,  weight: 6 },
     { emoji:'🍩', points: 20,  weight: 4 },
@@ -863,11 +1045,12 @@
 
   // ====== 背景セットアップ ======
   function setupBackground(){
+    const s = currentStage();
     cloudsLayer.innerHTML = '';
     hillsLayer.innerHTML = '';
     state.bgClouds = [];
     state.bgHills = [];
-    const cloudEmojis = ['☁️','⛅','☁️','☁️'];
+    const cloudEmojis = s.clouds;
     for (let i = 0; i < 6; i++){
       const e = document.createElement('span');
       e.className = 'bgItem';
@@ -879,7 +1062,7 @@
       cloudsLayer.appendChild(e);
       state.bgClouds.push({el:e, x});
     }
-    const hillEmojis = ['🌲','⛰️','🌳','🏔️','🌲','🌳'];
+    const hillEmojis = s.hills;
     for (let i = 0; i < 8; i++){
       const e = document.createElement('span');
       e.className = 'bgItem';
@@ -987,7 +1170,17 @@
   // 経過時間で複合パターンが増える
   function spawnPattern(){
     const t = state.elapsed;
+    const stage = currentStage();
     const r = Math.random();
+
+    // ステージ3：炎バーが時々出る
+    if (stage.bars && t > 12){
+      const barChance = t > 40 ? 0.22 : 0.14;
+      if (r < barChance){
+        spawnFlameBar();
+        return;
+      }
+    }
 
     // 0-25s: 単発中心
     if (t < 25){
@@ -1005,10 +1198,9 @@
     else {
       if (r < 0.30) spawnSingleObstacle(t);
       else if (r < 0.50) spawnPairObstacle(t);
-      else if (r < 0.70) spawnTripleObstacle();           // 連結→2段ジャンプ必須
-      else if (r < 0.85) spawnTallStack();                // 背の高い木→高く跳ぶ必要
+      else if (r < 0.70) spawnTripleObstacle();
+      else if (r < 0.85) spawnTallStack();
       else spawnFlyingMix(t);
-      // 高頻度でコインも単独出現
       if (Math.random() < 0.45) setTimeout(spawnCoinChain, 350);
     }
   }
@@ -1030,15 +1222,20 @@
   }
 
   function spawnSingleObstacle(t){
-    let pool;
-    if (t < 15) pool = ['short_rock','rock','hedgehog','cactus'];
-    else if (t < 35) pool = ['rock','hedgehog','cactus','log','bee','tall_cactus'];
-    else pool = ['rock','cactus','log','tall_cactus','tall_tree','bee','high_bee'];
-    const tmpl = OBSTACLES[pick(pool)];
-    pushObstacle(tmpl, gw() + 40);
+    let bucket;
+    if (t < 15) bucket = Math.random() < 0.5 ? 'short' : 'ground';
+    else if (t < 35) bucket = Math.random() < 0.5 ? 'ground' : (Math.random() < 0.6 ? 'tall' : 'fly');
+    else {
+      const r = Math.random();
+      if (r < 0.3) bucket = 'ground';
+      else if (r < 0.6) bucket = 'tall';
+      else if (r < 0.85) bucket = 'fly';
+      else bucket = 'flyHigh';
+    }
+    pushObstacle(pickStageObstacle(bucket), gw() + 40);
   }
   function spawnPairObstacle(t){
-    const tmpl = OBSTACLES[pick(['rock','cactus','log','hedgehog'])];
+    const tmpl = pickStageObstacle('ground');
     const startX = gw() + 40;
     const gap = rand(70, 110);
     pushObstacle(tmpl, startX);
@@ -1048,21 +1245,40 @@
     // 3連結：横幅をワイドにして単発ジャンプでは超えにくい
     const startX = gw() + 40;
     const gap = rand(58, 80);
-    const types = ['rock','cactus','log','hedgehog'];
     for (let i = 0; i < 3; i++){
-      pushObstacle(OBSTACLES[pick(types)], startX + gap*i);
+      pushObstacle(pickStageObstacle('ground'), startX + gap*i);
     }
   }
   function spawnTallStack(){
-    // 背の高い木の前に低い障害物 → 単発ジャンプで木は越えにくい＋低い物にも当たる
+    // 背の高い障害物の前に低い障害物 → 単発ジャンプで超えにくい＋低い物にも当たる
     const startX = gw() + 40;
-    pushObstacle(OBSTACLES['short_rock'], startX);
-    pushObstacle(OBSTACLES['tall_tree'],  startX + rand(80, 110));
+    pushObstacle(pickStageObstacle('short'), startX);
+    pushObstacle(pickStageObstacle('tall'),  startX + rand(80, 110));
   }
   function spawnFlyingMix(t){
     const startX = gw() + 40;
-    pushObstacle(OBSTACLES['rock'], startX);
-    pushObstacle(OBSTACLES[t < 50 ? 'bee' : 'high_bee'], startX + rand(120, 160));
+    pushObstacle(pickStageObstacle('ground'), startX);
+    pushObstacle(pickStageObstacle(t < 50 ? 'fly' : 'flyHigh'), startX + rand(120, 160));
+  }
+  // ステージ3：上下に揺れる炎の柱
+  function spawnFlameBar(){
+    const en = document.createElement('div');
+    en.className = 'entity obstacle osc-bar';
+    for (let i = 0; i < 4; i++){
+      const f = document.createElement('div');
+      f.textContent = '🔥';
+      en.appendChild(f);
+    }
+    const x = gw() + 40;
+    en.style.left = x + 'px';
+    GA.appendChild(en);
+    const baseY = groundTop() + gh() * 0.05;
+    const amp   = gh() * 0.18;
+    en.style.bottom = baseY + 'px';
+    state.entities.push({
+      el: en, x, type: 'obstacle', hazard: true,
+      osc: { baseY, amp, period: rand(1.4, 2.0), phase: Math.random()*Math.PI*2 },
+    });
   }
 
   function spawnCoinChain(){
@@ -1205,6 +1421,10 @@
     const gpW = groundPattern.clientWidth || gw()*2;
     const gpx = -((state.px) % (gpW/2));
     groundPattern.style.transform = `translateX(${gpx}px)`;
+    // 砂漠の波装飾もスクロール
+    if (currentStage().style === 'desert'){
+      groundDeco.style.backgroundPosition = `-${state.px % 200}px -2px`;
+    }
 
     // エンティティ
     const bRect = bearRect();
@@ -1213,6 +1433,13 @@
       const en = state.entities[i];
       en.x -= px;
       en.el.style.left = en.x + 'px';
+
+      // 上下に揺れる障害物（ステージ3 炎バーなど）
+      if (en.osc){
+        const ang = state.elapsed * (Math.PI*2 / en.osc.period) + en.osc.phase;
+        const yo = Math.sin(ang) * en.osc.amp;
+        en.el.style.bottom = (en.osc.baseY + yo) + 'px';
+      }
 
       if (en.x < -200){ en.el.remove(); state.entities.splice(i,1); continue; }
       if (en.taken) continue;
@@ -1448,6 +1675,24 @@
       newHiEl.style.display = 'none';
       goTitle.textContent = 'ゲームオーバー';
     }
+    // ステージごとのハイスコア更新
+    const prevStageHi = stageHi[selectedStageId] || 0;
+    if (finalScore > prevStageHi){
+      stageHi[selectedStageId] = finalScore;
+      saveAll();
+    }
+    // 次のステージが解放されたかチェック
+    stageUnlockEl.style.display = 'none';
+    const nextStage = STAGES.find(s => s.id === selectedStageId + 1);
+    if (nextStage){
+      const wasLocked = prevStageHi < nextStage.threshold;
+      const nowUnlocked = (stageHi[selectedStageId] || 0) >= nextStage.threshold;
+      if (wasLocked && nowUnlocked){
+        stageUnlockEl.innerHTML = '🎉 あたらしい ステージ <b>' + nextStage.name + '</b> ' + nextStage.emoji + ' かいほう！';
+        stageUnlockEl.style.display = 'block';
+        setTimeout(() => { spawnConfettiBurst(); playFanfareSfx(); }, 300);
+      }
+    }
 
     // 宝箱：閾値を超えた未解放の中から1つランダムに当たり、3つの箱からプレイヤーが選ぶ
     const candidates = BEARS.filter(b => !unlockedSet.has(b.id) && finalScore >= b.threshold);
@@ -1550,9 +1795,44 @@
     resetChests();
     document.querySelectorAll('.confetti').forEach(n => n.remove());
     stopMusic();
+    applyStage();
+    setupBackground();
+    renderStageSelect();
     renderBearGrid();
     applyBear(selectedBearId);
     startScreen.classList.add('show');
+  }
+
+  // ====== ステージ選択UI ======
+  function renderStageSelect(){
+    stageSelectEl.innerHTML = '';
+    STAGES.forEach(s => {
+      const btn = document.createElement('button');
+      btn.className = 'stageBtn';
+      if (s.legendary) btn.classList.add('legendary');
+      if (s.id === selectedStageId) btn.classList.add('selected');
+      const unlocked = isStageUnlocked(s.id);
+      const hi = stageHi[s.id] || 0;
+      btn.innerHTML = `
+        <span class="ico">${s.emoji}</span>
+        <span class="nm">${s.id}. ${s.name}</span>
+        <span class="info">${unlocked ? ('🏆 ' + hi) : ('🔒 ' + s.threshold + '点')}</span>
+      `;
+      if (!unlocked){
+        btn.classList.add('locked');
+        btn.disabled = true;
+      } else {
+        btn.addEventListener('click', () => {
+          if (selectedStageId === s.id) return;
+          selectedStageId = s.id;
+          saveAll();
+          applyStage();
+          setupBackground();
+          renderStageSelect();
+        });
+      }
+      stageSelectEl.appendChild(btn);
+    });
   }
 
   // ====== キャラクター選択UI ======
@@ -1775,10 +2055,15 @@
   musicBtn.classList.toggle('muted', !musicEnabled);
   musicBtn.textContent = musicEnabled ? '🎵' : '🔇';
 
+  // ロックされたステージが選択されていたら 1 に戻す
+  if (!isStageUnlocked(selectedStageId)) selectedStageId = 1;
+
   // 初期表示
+  applyStage();
   setupBackground();
   updateLives();
   applyBear(selectedBearId);
+  renderStageSelect();
   renderBearGrid();
 
   let resizeT;
