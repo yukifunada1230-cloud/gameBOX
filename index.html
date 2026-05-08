@@ -410,7 +410,10 @@
     gap: 8px;
     justify-content: center;
     flex-wrap: wrap;
-    z-index: 1;
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
+    touch-action: manipulation;
   }
   h1 {
     font-size: clamp(30px, 9vmin, 56px);
@@ -443,6 +446,11 @@
     box-shadow: 0 6px 18px rgba(255, 91, 167, 0.5);
     margin: 4px;
     font-family: inherit;
+    position: relative;
+    z-index: 11;
+    pointer-events: auto;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(255,255,255,0.2);
   }
   .btn.gray { background: linear-gradient(180deg, #cccccc, #999999); }
   .btn:active { transform: translateY(2px); box-shadow: 0 2px 6px rgba(255,91,167,0.5); }
@@ -1369,13 +1377,18 @@
   }
 
   function startGame(){
-    initAudio();
-    startMusic();
+    try {
+      initAudio();
+      startMusic();
+    } catch(e){ console.warn('audio init', e); }
     startScreen.classList.remove('show');
     gameOverScreen.classList.remove('show');
     pauseScreen.classList.remove('show');
     chestSection.style.display = 'none';
     revealStage.classList.remove('show');
+    resetChests();
+    // 過去のリザルト confetti を念のため掃除
+    document.querySelectorAll('.confetti').forEach(n => n.remove());
     resetState();
     setupBackground();
     pauseBtn.classList.add('show');
@@ -1385,6 +1398,16 @@
       state.lastTime = performance.now();
       rafId = requestAnimationFrame(tick);
     });
+  }
+
+  function resetChests(){
+    chestEls.forEach(el => {
+      el.classList.remove('opened','disabled','miss');
+      el.textContent = '🎁';
+      el.onclick = null;
+    });
+    revealBearEl.textContent = '';
+    revealNameEl.textContent = '';
   }
 
   function countdown(done){
@@ -1523,6 +1546,9 @@
     gameOverScreen.classList.remove('show');
     pauseBtn.classList.remove('show');
     chestSection.style.display = 'none';
+    revealStage.classList.remove('show');
+    resetChests();
+    document.querySelectorAll('.confetti').forEach(n => n.remove());
     stopMusic();
     renderBearGrid();
     applyBear(selectedBearId);
@@ -1726,13 +1752,26 @@
   }
 
   // ====== ボタン配線 ======
-  startBtn.addEventListener('click', startGame);
-  retryBtn.addEventListener('click', startGame);
-  pauseBtn.addEventListener('click', togglePause);
-  resumeBtn.addEventListener('click', togglePause);
-  quitBtn.addEventListener('click', quitToTitle);
-  goQuitBtn.addEventListener('click', quitToTitle);
-  musicBtn.addEventListener('click', () => { initAudio(); toggleMusic(); });
+  function safeHandler(fn){
+    return (e) => {
+      try { fn(e); } catch(err){ console.error('handler error', err); }
+    };
+  }
+  startBtn.addEventListener('click', safeHandler(startGame));
+  retryBtn.addEventListener('click', safeHandler(startGame));
+  pauseBtn.addEventListener('click', safeHandler(togglePause));
+  resumeBtn.addEventListener('click', safeHandler(togglePause));
+  quitBtn.addEventListener('click', safeHandler(quitToTitle));
+  goQuitBtn.addEventListener('click', safeHandler(quitToTitle));
+  musicBtn.addEventListener('click', safeHandler(() => { initAudio(); toggleMusic(); }));
+  // 万一 click が抑制されてもボタンが機能するよう pointerup でもバックアップ
+  function backupTap(btn, fn){
+    btn.addEventListener('pointerup', (e) => {
+      if (e.button !== undefined && e.button !== 0) return;
+      e.stopPropagation();
+    });
+  }
+  [startBtn, retryBtn, pauseBtn, resumeBtn, quitBtn, goQuitBtn, musicBtn].forEach(b => backupTap(b));
   musicBtn.classList.toggle('muted', !musicEnabled);
   musicBtn.textContent = musicEnabled ? '🎵' : '🔇';
 
