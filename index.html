@@ -207,6 +207,41 @@
     from { transform: translateY(-4px); }
     to   { transform: translateY(4px); }
   }
+  /* 障害物の視認性：白いふちどり + 影で背景から浮かす */
+  .obstacle:not(.osc-bar) {
+    filter:
+      drop-shadow(1.5px 1.5px 0 #fff) drop-shadow(-1.5px -1.5px 0 #fff)
+      drop-shadow(1.5px -1.5px 0 #fff) drop-shadow(-1.5px 1.5px 0 #fff)
+      drop-shadow(0 3px 4px rgba(0,0,0,0.35));
+  }
+  /* 溶岩ステージ：暗い障害物に黄色いふちどり */
+  .stage-lava .obstacle:not(.osc-bar) {
+    filter:
+      drop-shadow(1.5px 1.5px 0 #ffeb3b) drop-shadow(-1.5px -1.5px 0 #ffeb3b)
+      drop-shadow(1.5px -1.5px 0 #ffeb3b) drop-shadow(-1.5px 1.5px 0 #ffeb3b)
+      drop-shadow(0 0 6px #ff6600) drop-shadow(0 3px 4px rgba(0,0,0,0.4));
+  }
+
+  /* アイテム共通：背後の光オーラ */
+  .item-aura {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 160%; height: 160%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;
+    animation: itemAuraPulse 0.7s ease-in-out infinite alternate;
+  }
+  @keyframes itemAuraPulse {
+    from { transform: translate(-50%, -50%) scale(0.85); opacity: 0.55; }
+    to   { transform: translate(-50%, -50%) scale(1.20); opacity: 1; }
+  }
+  .coin    .item-aura { background: radial-gradient(circle, rgba(255,240,120,0.8) 0%, rgba(255,215,0,0) 60%); }
+  .jet     .item-aura { background: radial-gradient(circle, rgba(255,180,80,0.9) 0%, rgba(255,140,30,0) 60%); }
+  .barrier .item-aura { background: radial-gradient(circle, rgba(120,200,255,0.95) 0%, rgba(70,150,255,0) 60%); }
+  .star    .item-aura { background: radial-gradient(circle, rgba(255,220,150,0.95) 0%, rgba(255,140,200,0.5) 35%, rgba(180,120,255,0) 65%); }
+
   .coin {
     font-size: clamp(28px, 7vmin, 48px);
     animation: coinSpin 0.8s ease-in-out infinite alternate;
@@ -231,6 +266,77 @@
   @keyframes jetPulse {
     from { transform: scale(1) rotate(-4deg); }
     to   { transform: scale(1.18) rotate(8deg); }
+  }
+  /* バリアアイテム */
+  .barrier {
+    font-size: clamp(40px, 10vmin, 60px);
+    animation: barrierFloat 0.7s ease-in-out infinite alternate;
+    filter: drop-shadow(0 0 12px #66c8ff) drop-shadow(0 0 22px #aaddff);
+  }
+  @keyframes barrierFloat {
+    from { transform: translateY(-3px) rotate(-5deg) scale(1); }
+    to   { transform: translateY(3px) rotate(5deg) scale(1.10); }
+  }
+  /* スター（無敵）アイテム */
+  .star {
+    font-size: clamp(40px, 10vmin, 60px);
+    animation: starItemSpin 0.6s linear infinite;
+    filter: drop-shadow(0 0 12px #ffaa00) drop-shadow(0 0 22px #ff66cc);
+  }
+  @keyframes starItemSpin {
+    0%   { transform: rotate(0deg) scale(1); }
+    50%  { transform: rotate(180deg) scale(1.15); }
+    100% { transform: rotate(360deg) scale(1); }
+  }
+  .barrier.eaten, .star.eaten {
+    animation: coinEaten 0.3s ease-out forwards !important;
+  }
+
+  /* クマのバリア（盾）表示 */
+  #bear.shielded::after {
+    content: '';
+    position: absolute;
+    left: -8%; top: -4%;
+    width: 116%; height: 108%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(150,220,255,0.12) 55%, rgba(120,200,255,0.45) 82%, rgba(120,200,255,0) 100%);
+    border: 3px solid rgba(190,235,255,0.9);
+    box-shadow: 0 0 16px rgba(120,200,255,0.7), inset 0 0 18px rgba(180,230,255,0.4);
+    animation: shieldPulse 1s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 1;
+  }
+  @keyframes shieldPulse {
+    from { transform: scale(0.96); opacity: 0.85; }
+    to   { transform: scale(1.06); opacity: 1; }
+  }
+  .shieldBreak {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 140%; height: 140%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 4px solid #aaddff;
+    box-shadow: 0 0 18px #aaddff, inset 0 0 18px #aaddff;
+    pointer-events: none;
+    z-index: 30;
+    animation: shieldBreakAnim 0.55s ease-out forwards;
+  }
+  @keyframes shieldBreakAnim {
+    0%   { transform: translate(-50%, -50%) scale(1);   opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
+  }
+
+  /* クマのスター無敵（虹色フラッシュ） */
+  #bear.starred .bearBody {
+    animation: bearSway 0.42s ease-in-out infinite alternate, starHue 0.16s linear infinite;
+  }
+  @keyframes starHue {
+    0%   { filter: drop-shadow(0 0 8px #ff3366) drop-shadow(0 0 16px #ffeb3b); }
+    25%  { filter: drop-shadow(0 0 8px #ffaa00) drop-shadow(0 0 16px #66ff66); }
+    50%  { filter: drop-shadow(0 0 8px #00ddff) drop-shadow(0 0 16px #66aaff); }
+    75%  { filter: drop-shadow(0 0 8px #aa66ff) drop-shadow(0 0 16px #ff66cc); }
+    100% { filter: drop-shadow(0 0 8px #ff66cc) drop-shadow(0 0 16px #ffaa00); }
   }
 
   /* ===== HUD ===== */
@@ -274,6 +380,37 @@
     display: none;
   }
   #jetBox.show { display: inline-block; }
+  #starBox {
+    background: linear-gradient(90deg, #ff66cc, #ffd966, #66ddff);
+    color: #fff;
+    border-color: #fff;
+    text-shadow: 1px 1px 0 #884488;
+    margin-top: 4px;
+    display: none;
+  }
+  #starBox.show { display: inline-block; }
+  #shieldBox {
+    background: linear-gradient(90deg, #66c8ff, #aaddff);
+    color: #fff;
+    border-color: #fff;
+    text-shadow: 1px 1px 0 #1a5b9c;
+    margin-top: 4px;
+    display: none;
+  }
+  #shieldBox.show { display: inline-block; }
+  #comboBox {
+    background: linear-gradient(90deg, #ff8ec5, #ff5ba7);
+    color: #fff;
+    border-color: #fff;
+    text-shadow: 1px 1px 0 #b8003c;
+    margin-top: 4px;
+    display: none;
+  }
+  #comboBox.show { display: inline-block; animation: comboPop 0.25s ease-out; }
+  @keyframes comboPop {
+    0%   { transform: scale(1.5); }
+    100% { transform: scale(1); }
+  }
   #hudCenter { display:flex; flex-direction:column; align-items:center; gap:2px; }
   #lives { letter-spacing: 2px; }
 
@@ -751,6 +888,9 @@
       <div id="hudCenter">
         <div class="hudBox" id="lives">❤️❤️❤️</div>
         <div class="hudBox" id="hiBox">🏆 <span id="hi">0</span></div>
+        <div class="hudBox" id="comboBox">⚡ COMBO ×<span id="comboNum">3</span></div>
+        <div class="hudBox" id="shieldBox">🛡️ バリア</div>
+        <div class="hudBox" id="starBox">⭐ <span id="starTimer">3.0</span>s</div>
         <div class="hudBox" id="jetBox">🚀 <span id="jetTimer">5.0</span>s</div>
       </div>
       <div class="hudBox" id="speedBox">🚀 <span id="speed">1.0</span>x</div>
@@ -774,7 +914,8 @@
         <div class="bearGrid" id="bearGrid"></div>
         <div class="subtitle">
           タップで <b>ジャンプ</b> ／ もういちどで <b>2だんジャンプ</b><br>
-          🚀 を とると スーパーダッシュ！
+          🚀 ダッシュ ／ 🛡️ バリア（1かい ガード） ／ 🌟 むてき！<br>
+          ぞくぞく ジャンプで <b>コンボ</b>！ 500てんごとに ボーナス！
         </div>
       </div>
       <div class="overlayActions">
@@ -843,6 +984,11 @@
   const speedEl = document.getElementById('speed');
   const jetBox = document.getElementById('jetBox');
   const jetTimerEl = document.getElementById('jetTimer');
+  const starBox = document.getElementById('starBox');
+  const starTimerEl = document.getElementById('starTimer');
+  const shieldBox = document.getElementById('shieldBox');
+  const comboBox = document.getElementById('comboBox');
+  const comboNumEl = document.getElementById('comboNum');
   const pauseBtn = document.getElementById('pauseBtn');
   const musicBtn = document.getElementById('musicBtn');
   const hitFlash = document.getElementById('hitFlash');
@@ -1000,6 +1146,10 @@
     invincibleUntil: 0,
     slowUntil: 0,
     jetUntil: 0,
+    starUntil: 0,
+    hasBarrier: false,
+    combo: 0,
+    lastMilestone: 0,
     bearY: 0,
     bearVy: 0,
     onGround: true,
@@ -1014,7 +1164,7 @@
     lastTime: 0,
     accSpawn: 0,
     nextSpawn: 1.4,
-    jetCooldown: 12,    // 最初のジェット出現まで12秒
+    powerCooldown: 8,   // 最初のパワーアップ出現まで8秒
     last200: 0,
     speedLineAcc: 0,
   };
@@ -1028,6 +1178,43 @@
   const SCORE_PER_SEC = 10;
   const JET_DURATION = 5;          // 秒
   const JET_SPEED_MUL = 1.9;
+  const STAR_DURATION = 3;         // 秒（無敵）
+  const MILESTONE_STEP = 500;      // マイルストーンスコア間隔
+  const MILESTONE_BONUS = 50;      // マイルストーン到達ボーナス
+
+  // コンボ加算ボーナス：1-2連続=+0、3-4=+10、5-6=+20、7+=+30
+  function comboBonus(n){
+    if (n < 3) return 0;
+    if (n < 5) return 10;
+    if (n < 7) return 20;
+    return 30;
+  }
+  function onObstacleCleared(en){
+    state.combo += 1;
+    const bonus = comboBonus(state.combo);
+    if (bonus > 0){
+      state.score += bonus;
+      scoreEl.textContent = Math.floor(state.score);
+      // 画面の左端付近に通知
+      spawnScoreFloat(80, gh()*0.45, '×' + state.combo + ' +' + bonus);
+    }
+    if (state.combo >= 3){
+      comboBox.classList.add('show');
+      comboNumEl.textContent = state.combo;
+      // ポップ用に再アニメーション
+      comboBox.style.animation = 'none';
+      void comboBox.offsetWidth;
+      comboBox.style.animation = '';
+    }
+  }
+  function resetCombo(){
+    if (state.combo >= 3) {
+      // 高コンボ消失時の演出
+      spawnScoreFloat(80, gh()*0.45, 'コンボ きれた…');
+    }
+    state.combo = 0;
+    comboBox.classList.remove('show');
+  }
 
   // ====== 障害物選択：ステージのobstaclesを参照 ======
   function pickStageObstacle(bucket){
@@ -1167,41 +1354,49 @@
   });
 
   // ====== スポーン ======
-  // 経過時間で複合パターンが増える
+  // 経過時間で複合パターンが増える（緩めの曲線）
   function spawnPattern(){
     const t = state.elapsed;
     const stage = currentStage();
     const r = Math.random();
 
-    // ステージ3：炎バーが時々出る
-    if (stage.bars && t > 12){
-      const barChance = t > 40 ? 0.22 : 0.14;
+    // ステージ3：炎バーが時々出る（出現開始を遅らせ確率も控えめ）
+    if (stage.bars && t > 18){
+      const barChance = t > 55 ? 0.16 : 0.08;
       if (r < barChance){
         spawnFlameBar();
         return;
       }
     }
 
-    // 0-25s: 単発中心
-    if (t < 25){
-      if (r < 0.7) spawnSingleObstacle(t);
+    // 0-30s: 単発中心
+    if (t < 30){
+      if (r < 0.72) spawnSingleObstacle(t);
       else spawnCoinChain();
     }
-    // 25-55s: 単発+ペア +飛行
-    else if (t < 55){
-      if (r < 0.45) spawnSingleObstacle(t);
-      else if (r < 0.65) spawnPairObstacle(t);
-      else if (r < 0.80) spawnFlyingMix(t);
+    // 30-65s: 単発+ペア +飛行
+    else if (t < 65){
+      if (r < 0.50) spawnSingleObstacle(t);
+      else if (r < 0.68) spawnPairObstacle(t);
+      else if (r < 0.82) spawnFlyingMix(t);
       else spawnCoinChain();
     }
-    // 55s+: 高難度。3連結や背高木+地上+飛行の重ね
+    // 65-90s: 背高スタックが入り始める（3連結はまだ無し）
+    else if (t < 90){
+      if (r < 0.38) spawnSingleObstacle(t);
+      else if (r < 0.58) spawnPairObstacle(t);
+      else if (r < 0.78) spawnFlyingMix(t);
+      else if (r < 0.92) spawnTallStack();
+      else spawnCoinChain();
+    }
+    // 90s+: 3連結も解禁。ただし出現率は控えめ
     else {
-      if (r < 0.30) spawnSingleObstacle(t);
-      else if (r < 0.50) spawnPairObstacle(t);
-      else if (r < 0.70) spawnTripleObstacle();
+      if (r < 0.32) spawnSingleObstacle(t);
+      else if (r < 0.55) spawnPairObstacle(t);
+      else if (r < 0.70) spawnFlyingMix(t);
       else if (r < 0.85) spawnTallStack();
-      else spawnFlyingMix(t);
-      if (Math.random() < 0.45) setTimeout(spawnCoinChain, 350);
+      else spawnTripleObstacle();
+      if (Math.random() < 0.40) setTimeout(spawnCoinChain, 380);
     }
   }
 
@@ -1242,18 +1437,18 @@
     pushObstacle(tmpl, startX + gap);
   }
   function spawnTripleObstacle(){
-    // 3連結：横幅をワイドにして単発ジャンプでは超えにくい
+    // 3連結：間隔を広めにして 2段ジャンプで現実的に超えられるよう調整
     const startX = gw() + 40;
-    const gap = rand(58, 80);
+    const gap = rand(95, 125);
     for (let i = 0; i < 3; i++){
       pushObstacle(pickStageObstacle('ground'), startX + gap*i);
     }
   }
   function spawnTallStack(){
-    // 背の高い障害物の前に低い障害物 → 単発ジャンプで超えにくい＋低い物にも当たる
+    // 背の高い障害物の前に低い障害物 → 隙間を広めに取り回避可能に
     const startX = gw() + 40;
     pushObstacle(pickStageObstacle('short'), startX);
-    pushObstacle(pickStageObstacle('tall'),  startX + rand(80, 110));
+    pushObstacle(pickStageObstacle('tall'),  startX + rand(100, 130));
   }
   function spawnFlyingMix(t){
     const startX = gw() + 40;
@@ -1272,12 +1467,12 @@
     const x = gw() + 40;
     en.style.left = x + 'px';
     GA.appendChild(en);
-    const baseY = groundTop() + gh() * 0.05;
-    const amp   = gh() * 0.18;
+    const baseY = groundTop() + gh() * 0.06;
+    const amp   = gh() * 0.13;
     en.style.bottom = baseY + 'px';
     state.entities.push({
       el: en, x, type: 'obstacle', hazard: true,
-      osc: { baseY, amp, period: rand(1.4, 2.0), phase: Math.random()*Math.PI*2 },
+      osc: { baseY, amp, period: rand(1.7, 2.4), phase: Math.random()*Math.PI*2 },
     });
   }
 
@@ -1290,7 +1485,12 @@
     for (let i = 0; i < count; i++){
       const en = document.createElement('div');
       en.className = 'entity coin';
-      en.textContent = c.emoji;
+      const aura = document.createElement('span');
+      aura.className = 'item-aura';
+      en.appendChild(aura);
+      const txt = document.createElement('span');
+      txt.textContent = c.emoji;
+      en.appendChild(txt);
       const x = startX + i * gap;
       en.style.left = x + 'px';
       const dy = Math.sin((i / Math.max(1,count-1)) * Math.PI) * gh() * 0.08;
@@ -1300,22 +1500,60 @@
     }
   }
 
-  function spawnJet(){
+  function makePowerEl(cls, emoji, x, by){
     const en = document.createElement('div');
-    en.className = 'entity jet';
-    en.textContent = '🚀';
-    const x = gw() + 60;
+    en.className = 'entity ' + cls;
+    const aura = document.createElement('span');
+    aura.className = 'item-aura';
+    en.appendChild(aura);
+    const txt = document.createElement('span');
+    txt.textContent = emoji;
+    en.appendChild(txt);
     en.style.left = x + 'px';
-    en.style.bottom = (groundTop() + gh() * rand(0.18, 0.42)) + 'px';
+    en.style.bottom = by + 'px';
     GA.appendChild(en);
+    return en;
+  }
+  function spawnJet(){
+    const x = gw() + 60;
+    const by = groundTop() + gh() * rand(0.18, 0.42);
+    const en = makePowerEl('jet', '🚀', x, by);
     state.entities.push({ el:en, x, type:'jet', hazard:false });
+  }
+  function spawnBarrier(){
+    const x = gw() + 60;
+    const by = groundTop() + gh() * rand(0.18, 0.40);
+    const en = makePowerEl('barrier', '🛡️', x, by);
+    state.entities.push({ el:en, x, type:'barrier', hazard:false });
+  }
+  function spawnStar(){
+    const x = gw() + 60;
+    const by = groundTop() + gh() * rand(0.18, 0.40);
+    // 50点コイン⭐ と区別するため 🌟 を使用
+    const en = makePowerEl('star', '🌟', x, by);
+    state.entities.push({ el:en, x, type:'star', hazard:false });
+  }
+  function spawnPowerUp(){
+    // バリア40% / スター40% / ジェット20%
+    // 既にバリア所持中はバリア出現を半減して再分配
+    const r = Math.random();
+    let pBar = 0.40, pStar = 0.40, pJet = 0.20;
+    if (state.hasBarrier){
+      pBar = 0.18;
+      pStar = 0.52;
+      pJet  = 0.30;
+    }
+    if (r < pBar) spawnBarrier();
+    else if (r < pBar + pStar) spawnStar();
+    else spawnJet();
   }
 
   function scheduleNextSpawn(){
     const t = state.elapsed;
     const speedFactor = state.speed;
-    let minGap = Math.max(0.55, 1.30 - t*0.012) / speedFactor;
-    let maxGap = Math.max(0.95, 2.10 - t*0.018) / speedFactor;
+    // 緩めの曲線：序盤も後半も若干余裕を持たせる
+    let minGap = Math.max(0.70, 1.40 - t*0.010) / speedFactor;
+    let maxGap = Math.max(1.10, 2.20 - t*0.015) / speedFactor;
     state.accSpawn = 0;
     state.nextSpawn = rand(minGap, maxGap);
   }
@@ -1326,8 +1564,8 @@
     const now = performance.now();
     const jetting = now < state.jetUntil;
 
-    // スピード倍率
-    const targetSpeed = Math.min(2.6, 1 + state.elapsed * 0.018);
+    // スピード倍率（最高 2.2x、加速も緩やかに）
+    const targetSpeed = Math.min(2.2, 1 + state.elapsed * 0.013);
     state.speed += (targetSpeed - state.speed) * Math.min(1, dt*1.5);
 
     let speedMul = state.speed;
@@ -1352,6 +1590,15 @@
       const cheers = ['いいね！','ナイス！','すごい！','じょうず！','ステキ！'];
       spawnScoreFloat(gw()*0.5, gh()*0.32, pick(cheers));
       playCheerSfx();
+    }
+    // マイルストーン：500点ごとにボーナス
+    if (state.score - state.lastMilestone >= MILESTONE_STEP){
+      state.lastMilestone = Math.floor(state.score / MILESTONE_STEP) * MILESTONE_STEP;
+      state.score += MILESTONE_BONUS;
+      scoreEl.textContent = Math.floor(state.score);
+      spawnScoreFloat(gw()*0.5, gh()*0.45,
+        '🎯 ' + state.lastMilestone + 'てん +' + MILESTONE_BONUS + '!');
+      playFanfareSfx();
     }
 
     // ジェット表示
@@ -1428,7 +1675,8 @@
 
     // エンティティ
     const bRect = bearRect();
-    const invincible = (now < state.invincibleUntil) || jetting;
+    const starred = now < state.starUntil;
+    const invincible = (now < state.invincibleUntil) || jetting || starred;
     for (let i = state.entities.length - 1; i >= 0; i--){
       const en = state.entities[i];
       en.x -= px;
@@ -1441,7 +1689,13 @@
         en.el.style.bottom = (en.osc.baseY + yo) + 'px';
       }
 
-      if (en.x < -200){ en.el.remove(); state.entities.splice(i,1); continue; }
+      if (en.x < -200){
+        // 障害物が画面外に消える＝回避成功 → コンボ加算
+        if (en.hazard && !en.hit){
+          onObstacleCleared(en);
+        }
+        en.el.remove(); state.entities.splice(i,1); continue;
+      }
       if (en.taken) continue;
 
       const rect = entityRect(en);
@@ -1462,6 +1716,23 @@
         spawnScoreFloat(rect.x + rect.w/2, rect.y, '🚀ダッシュ！');
         playJetSfx();
         setTimeout(() => en.el.remove(), 300);
+      } else if (en.type === 'barrier'){
+        en.taken = true;
+        en.el.classList.add('eaten');
+        state.hasBarrier = true;
+        bear.classList.add('shielded');
+        spawnScoreFloat(rect.x + rect.w/2, rect.y, '🛡️バリア！');
+        playBarrierGetSfx();
+        setTimeout(() => en.el.remove(), 300);
+      } else if (en.type === 'star'){
+        en.taken = true;
+        en.el.classList.add('eaten');
+        // 既にスター中なら延長
+        const baseTime = Math.max(now, state.starUntil);
+        state.starUntil = baseTime + STAR_DURATION * 1000;
+        spawnScoreFloat(rect.x + rect.w/2, rect.y, '⭐むてき！');
+        playStarSfx();
+        setTimeout(() => en.el.remove(), 300);
       } else if (en.hazard){
         if (jetting){
           // ジェット中：障害物を吹き飛ばす
@@ -1473,8 +1744,34 @@
           spawnScoreFloat(rect.x + rect.w/2, rect.y, '+30');
           playSmashSfx();
           setTimeout(() => en.el.remove(), 400);
+        } else if (starred){
+          // スター中：体当たりで吹き飛ばす（ダメージなし、コンボ維持）
+          en.taken = true;
+          en.el.style.transition = 'transform 0.4s, opacity 0.4s';
+          en.el.style.transform = 'translateY(-160px) rotate(-420deg)';
+          en.el.style.opacity = '0';
+          state.score += 20;
+          spawnScoreFloat(rect.x + rect.w/2, rect.y, '+20');
+          playSmashSfx();
+          setTimeout(() => en.el.remove(), 400);
+        } else if (state.hasBarrier){
+          // バリアが1発分のダメージを吸収
+          en.taken = true;
+          en.hit = false; // コンボ維持
+          state.hasBarrier = false;
+          bear.classList.remove('shielded');
+          state.invincibleUntil = now + 700;
+          spawnShieldBreak();
+          spawnScoreFloat(rect.x + rect.w/2, rect.y, '🛡️ガード！');
+          playShieldBreakSfx();
+          // 障害物は弾かれる演出
+          en.el.style.transition = 'transform 0.4s, opacity 0.4s';
+          en.el.style.transform = 'translateY(-120px) rotate(360deg)';
+          en.el.style.opacity = '0';
+          setTimeout(() => en.el.remove(), 400);
         } else if (!invincible){
           en.taken = true;
+          en.hit = true;
           hitObstacle(rect);
         }
       }
@@ -1487,13 +1784,30 @@
       scheduleNextSpawn();
     }
 
-    // ジェットの定期スポーン（経過時間で頻度UP、ただしレア）
-    state.jetCooldown -= dt * (jetting ? 0 : 1);
-    if (state.jetCooldown <= 0){
-      spawnJet();
-      // 経過とともに少し短くなる(min 18s)
-      const base = Math.max(18, 30 - state.elapsed * 0.05);
-      state.jetCooldown = base + rand(-4, 6);
+    // パワーアップの定期スポーン（バリア・スター多め、ジェット控えめ）
+    state.powerCooldown -= dt;
+    if (state.powerCooldown <= 0){
+      spawnPowerUp();
+      // 経過とともに少し短くなる(min 11s)
+      const base = Math.max(11, 18 - state.elapsed * 0.04);
+      state.powerCooldown = base + rand(-3, 5);
+    }
+
+    // スターHUD表示
+    if (starred){
+      starBox.classList.add('show');
+      starTimerEl.textContent = ((state.starUntil - now) / 1000).toFixed(1);
+      bear.classList.add('starred');
+    } else {
+      starBox.classList.remove('show');
+      bear.classList.remove('starred');
+    }
+    // バリアHUD表示
+    if (state.hasBarrier){
+      shieldBox.classList.add('show');
+    } else {
+      shieldBox.classList.remove('show');
+      bear.classList.remove('shielded');
     }
   }
 
@@ -1530,6 +1844,7 @@
   function hitObstacle(rect){
     state.lives -= 1;
     updateLives();
+    resetCombo();
     state.invincibleUntil = performance.now() + 1400;
     state.slowUntil = performance.now() + 800;
     bear.classList.add('hurt');
@@ -1544,6 +1859,12 @@
     playHitSfx();
     if ('vibrate' in navigator) try { navigator.vibrate(80); } catch(e){}
     if (state.lives <= 0) gameOver();
+  }
+  function spawnShieldBreak(){
+    const el = document.createElement('div');
+    el.className = 'shieldBreak';
+    bear.appendChild(el);
+    setTimeout(() => el.remove(), 600);
   }
   function updateLives(){
     let s = '';
@@ -1569,7 +1890,7 @@
   function clearEntities(){
     for (const e of state.entities) e.el.remove();
     state.entities = [];
-    document.querySelectorAll('.scoreFloat, .painText, .speedLine').forEach(n => n.remove());
+    document.querySelectorAll('.scoreFloat, .painText, .speedLine, .shieldBreak').forEach(n => n.remove());
   }
   function resetState(){
     clearEntities();
@@ -1581,6 +1902,10 @@
     state.invincibleUntil = 0;
     state.slowUntil = 0;
     state.jetUntil = 0;
+    state.starUntil = 0;
+    state.hasBarrier = false;
+    state.combo = 0;
+    state.lastMilestone = 0;
     state.bearY = 0;
     state.bearVy = 0;
     state.onGround = true;
@@ -1590,14 +1915,17 @@
     state.last200 = 0;
     state.accSpawn = 0;
     state.nextSpawn = 1.4;
-    state.jetCooldown = 12;
+    state.powerCooldown = 8;
     state.spinAngle = 0;
     state.spinUntil = 0;
     scoreEl.textContent = '0';
     speedEl.textContent = '1.0';
     jetBox.classList.remove('show');
+    starBox.classList.remove('show');
+    shieldBox.classList.remove('show');
+    comboBox.classList.remove('show');
     updateLives();
-    bear.classList.remove('hurt','invincible','jetting','air');
+    bear.classList.remove('hurt','invincible','jetting','air','shielded','starred');
     bear.style.transform = '';
     bearBody.classList.add('running');
     applyBear(selectedBearId);
@@ -1979,6 +2307,25 @@
     if (!audioCtx) return;
     const t = audioCtx.currentTime;
     [523, 659, 784, 1046].forEach((f, i) => playTone(f, t + i*0.05, 0.18, 'sawtooth', 0.10));
+  }
+  function playBarrierGetSfx(){
+    if (!audioCtx) return;
+    const t = audioCtx.currentTime;
+    playTone(523, t,        0.15, 'triangle', 0.12);
+    playTone(784, t + 0.08, 0.18, 'triangle', 0.12);
+    playTone(659, t + 0.18, 0.22, 'sine',     0.14);
+  }
+  function playStarSfx(){
+    if (!audioCtx) return;
+    const t = audioCtx.currentTime;
+    [659, 784, 988, 1175, 1568].forEach((f, i) => playTone(f, t + i*0.05, 0.16, 'triangle', 0.12));
+  }
+  function playShieldBreakSfx(){
+    if (!audioCtx) return;
+    const t = audioCtx.currentTime;
+    playTone(880, t,        0.10, 'square', 0.10);
+    playTone(660, t + 0.05, 0.14, 'square', 0.10);
+    playNoise(t, 0.18, 0.10);
   }
   function playSmashSfx(){
     if (!audioCtx) return;
